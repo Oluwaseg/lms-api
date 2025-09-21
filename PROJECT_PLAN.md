@@ -4,7 +4,7 @@
 
 ### 1. Students
 
-- Cannot sign up directly; they must be added by parents.
+- Can sign up directly; or they can be added by parents.
 - Enroll in free or paid courses.
 - Track progress, complete assignments, and earn badges.
 

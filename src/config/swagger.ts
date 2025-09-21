@@ -17,32 +17,40 @@ const options = {
     ],
     components: {
       schemas: {
+        Role: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' },
+            name: { type: 'string' },
+            description: { type: 'string' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
+        },
         User: {
           type: 'object',
           properties: {
-            id: {
-              type: 'string',
-              format: 'uuid',
-            },
-            name: {
-              type: 'string',
-            },
-            email: {
-              type: 'string',
-              format: 'email',
-            },
-            isVerified: {
-              type: 'boolean',
-            },
-            createdAt: {
-              type: 'string',
-              format: 'date-time',
-            },
-            updatedAt: {
-              type: 'string',
-              format: 'date-time',
-            },
+            id: { type: 'string', format: 'uuid' },
+            name: { type: 'string' },
+            email: { type: 'string', format: 'email' },
+            role: { $ref: '#/components/schemas/Role' },
+            code: { type: 'string' },
+            status: { type: 'string' },
+            isVerified: { type: 'boolean' },
+            lastLogin: { type: 'string', format: 'date-time' },
+            deletedAt: { type: 'string', format: 'date-time' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
           },
+        },
+        TokenData: {
+          type: 'object',
+          properties: {
+            token: { type: 'string', description: 'JWT token' },
+          },
+          example: {
+            token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+          }
         },
         Error: {
           type: 'object',
@@ -94,8 +102,13 @@ const options = {
               description: 'Response message',
             },
             data: {
-              type: 'object',
-              description: 'Response data',
+              description: 'Response data (varies by endpoint)',
+              anyOf: [
+                { $ref: '#/components/schemas/TokenData' },
+                { $ref: '#/components/schemas/User' },
+                { type: 'object' },
+                { type: 'array' }
+              ]
             },
             meta: {
               $ref: '#/components/schemas/PaginationMeta',
@@ -113,6 +126,29 @@ const options = {
             },
           },
         },
+        ErrorResponse: {
+          type: 'object',
+          properties: {
+            statusCode: { type: 'integer' },
+            success: { type: 'boolean' },
+            message: { type: 'string' },
+            errors: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/Error' }
+            },
+            timestamp: { type: 'string', format: 'date-time' }
+          }
+        },
+        ApiResponseExample: {
+          type: 'object',
+          example: {
+            statusCode: 200,
+            success: true,
+            message: 'OK',
+            data: { id: 'uuid-or-object' },
+            timestamp: new Date().toISOString(),
+          }
+        }
       },
       securitySchemes: {
         BearerAuth: {

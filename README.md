@@ -84,7 +84,7 @@ cd lms
 2. Install dependencies:
 
 ```bash
-ppnpm install
+pnpm install
 ```
 
 3. Setup `.env` file with:

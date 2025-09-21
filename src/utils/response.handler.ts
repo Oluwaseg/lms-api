@@ -62,4 +62,8 @@ export class ResponseHandler {
   static unauthorized(message: string = 'Unauthorized'): ApiResponse<null> {
     return this.error(message, 401);
   }
+
+  static forbidden(message: string = 'Forbidden'): ApiResponse<null> {
+    return this.error(message, 403);
+  }
 }

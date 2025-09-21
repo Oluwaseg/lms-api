@@ -1,9 +1,11 @@
+# Student Endpoints
+
 # Register
-POST http://localhost:3025/api/auth/register
+POST http://localhost:3025/api/students/register
 Content-Type: application/json
 
 {
   "name": "testuser",
   "email": "testuser@example.com",
   "password": "password123"
-}
+} 
