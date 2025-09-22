@@ -140,8 +140,17 @@ export class ParentService {
     } as Partial<ParentChild>);
     await parentChildRepo.save(pc);
 
-    // create verification token if email provided
+    // create verification/invite token if email provided
     if (childData.email) {
+      // Mark any previous unused tokens for this user as used (single-active-token)
+      await tokenRepo
+        .createQueryBuilder()
+        .update()
+        .set({ used: true })
+        .where('user_id = :userId', { userId: savedChild.id })
+        .andWhere('used = :used', { used: false })
+        .execute();
+
       const token = crypto.randomBytes(32).toString('hex');
       const secret = process.env.TOKEN_SECRET || 'dev-token-secret';
       const hmac = crypto
@@ -159,11 +168,19 @@ export class ParentService {
       } as Partial<VerificationToken>);
       await tokenRepo.save(vt);
       try {
+        // Use a dedicated invite email template (do not re-use verification email for invites)
+        // sendInviteEmail is more appropriate here (includes parent/child names and invite link)
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { sendInviteEmail } = require('../utils/mailer');
         if (childData.email)
-          await sendVerificationEmail(childData.email, token);
+          await sendInviteEmail(childData.email, token, {
+            recipientName: childData.name,
+            parentName: parent.name,
+            expiresHours: 24,
+          });
       } catch (e) {
         // eslint-disable-next-line no-console
-        console.error('Failed to send verification email', e);
+        console.error('Failed to send invite email', e);
       }
       return { child: savedChild, link: pc };
     }
@@ -201,5 +218,36 @@ export class ParentService {
     await tokenRepo.save(vt);
 
     return { user: { id: user.id, name: user.name, email: user.email } };
+  }
+
+  static async resendVerification(email: string) {
+    const user = await userRepo.findOne({ where: { email } });
+    if (!user) throw new Error('User not found');
+    if (user.isVerified) throw new Error('User already verified');
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const secret = process.env.TOKEN_SECRET || 'dev-token-secret';
+    const hmac = crypto
+      .createHmac('sha256', secret)
+      .update(token)
+      .digest('hex');
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+    const vt = tokenRepo.create({
+      user,
+      tokenHash: hmac,
+      type: 'email_verification',
+      expiresAt,
+      used: false,
+    } as Partial<VerificationToken>);
+    await tokenRepo.save(vt);
+
+    try {
+      if (user.email) await sendVerificationEmail(user.email, token);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to send verification email', e);
+    }
+
+    return { success: true };
   }
 }

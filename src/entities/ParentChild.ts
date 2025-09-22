@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   Unique,
@@ -15,9 +16,11 @@ export class ParentChild {
   id!: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'parent_id' })
   parent!: User;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'child_id' })
   child!: User;
 
   @Column({ type: 'varchar', length: 32, nullable: true })

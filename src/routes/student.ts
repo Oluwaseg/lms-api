@@ -1,6 +1,10 @@
 import { Router } from 'express';
-import { body } from 'express-validator';
 import { StudentController } from '../controllers/StudentController';
+import { authenticate, requireRole } from '../middleware/auth.middleware';
+import rateLimiter from '../utils/rateLimiter';
+import { validate } from '../validate';
+import { emailBodySchema } from '../validate/common';
+import { studentRegisterSchema } from '../validate/student';
 
 export const studentRouter = Router();
 
@@ -49,13 +53,7 @@ export const studentRouter = Router();
  */
 studentRouter.post(
   '/register',
-  [
-    body('name').trim().notEmpty().withMessage('Name is required'),
-    body('email').isEmail().withMessage('Valid email is required'),
-    body('password')
-      .isLength({ min: 6 })
-      .withMessage('Password must be at least 6 characters long'),
-  ],
+  validate(studentRegisterSchema),
   StudentController.register
 );
 
@@ -96,6 +94,69 @@ studentRouter.post(
  *                       $ref: '#/components/schemas/TokenData'
  */
 studentRouter.post('/login', StudentController.login);
+
+/**
+ * @swagger
+ * /api/students/resend-verification:
+ *   post:
+ *     tags:
+ *       - Students
+ *     summary: Resend email verification for a student
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Verification email resent
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ */
+studentRouter.post(
+  '/resend-verification',
+  rateLimiter(6, 1000 * 60 * 60),
+  validate(emailBodySchema),
+  StudentController.resendVerification
+);
+
+/**
+ * @swagger
+ * /api/students/me:
+ *   get:
+ *     tags:
+ *       - Students
+ *     summary: Get currently authenticated student profile
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Student profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/User'
+ */
+studentRouter.get(
+  '/me',
+  authenticate,
+  requireRole('student'),
+  StudentController.me
+);
 
 /**
  * @swagger

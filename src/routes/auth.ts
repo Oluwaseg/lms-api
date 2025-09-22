@@ -1,18 +1,12 @@
 import { Router } from 'express';
-import { body } from 'express-validator';
 import { AuthController } from '../controllers/AuthController';
+import { validate } from '../validate';
+import { authLoginSchema } from '../validate/auth';
 
 export const authRouter = Router();
 
 // Deprecated: auth endpoints have been replaced by role-specific routers
-authRouter.post(
-  '/login',
-  [
-    body('email').isEmail().withMessage('Valid email is required'),
-    body('password').isLength({ min: 1 }).withMessage('Password is required'),
-  ],
-  AuthController.login
-);
+authRouter.post('/login', validate(authLoginSchema), AuthController.login);
 
 // Keep fallback for any other deprecated auth endpoints
 authRouter.use((req, res) => {

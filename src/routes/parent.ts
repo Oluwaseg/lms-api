@@ -1,7 +1,9 @@
 import { Request, Response, Router } from 'express';
 import { ParentController } from '../controllers/ParentController';
 import { authenticate, requireRole } from '../middleware/auth.middleware';
+import rateLimiter from '../utils/rateLimiter';
 import { validate } from '../validate';
+import { emailBodySchema } from '../validate/common';
 import {
   createChildSchema,
   linkChildSchema,
@@ -240,4 +242,67 @@ parentRouter.post(
   requireRole('parent'),
   validate(createChildSchema),
   ParentController.createChild
+);
+
+/**
+ * @swagger
+ * /api/parents/resend-verification:
+ *   post:
+ *     tags:
+ *       - Parents
+ *     summary: Resend email verification for a parent
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Verification email resent
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ */
+parentRouter.post(
+  '/resend-verification',
+  rateLimiter(6, 1000 * 60 * 60),
+  validate(emailBodySchema),
+  ParentController.resendVerification
+);
+
+/**
+ * @swagger
+ * /api/parents/me:
+ *   get:
+ *     tags:
+ *       - Parents
+ *     summary: Get currently authenticated parent profile
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Parent profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/User'
+ */
+parentRouter.get(
+  '/me',
+  authenticate,
+  requireRole('parent'),
+  ParentController.me
 );

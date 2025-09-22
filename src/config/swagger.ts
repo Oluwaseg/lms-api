@@ -49,8 +49,8 @@ const options = {
             token: { type: 'string', description: 'JWT token' },
           },
           example: {
-            token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
-          }
+            token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+          },
         },
         Error: {
           type: 'object',
@@ -107,8 +107,8 @@ const options = {
                 { $ref: '#/components/schemas/TokenData' },
                 { $ref: '#/components/schemas/User' },
                 { type: 'object' },
-                { type: 'array' }
-              ]
+                { type: 'array' },
+              ],
             },
             meta: {
               $ref: '#/components/schemas/PaginationMeta',
@@ -134,10 +134,10 @@ const options = {
             message: { type: 'string' },
             errors: {
               type: 'array',
-              items: { $ref: '#/components/schemas/Error' }
+              items: { $ref: '#/components/schemas/Error' },
             },
-            timestamp: { type: 'string', format: 'date-time' }
-          }
+            timestamp: { type: 'string', format: 'date-time' },
+          },
         },
         ApiResponseExample: {
           type: 'object',
@@ -147,8 +147,8 @@ const options = {
             message: 'OK',
             data: { id: 'uuid-or-object' },
             timestamp: new Date().toISOString(),
-          }
-        }
+          },
+        },
       },
       securitySchemes: {
         BearerAuth: {

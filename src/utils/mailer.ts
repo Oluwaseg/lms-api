@@ -25,3 +25,30 @@ export async function sendVerificationEmail(to: string, token: string) {
     text: `Verify your email using this link: ${verifyUrl}`,
   });
 }
+
+export async function sendInviteEmail(
+  to: string,
+  token: string,
+  opts?: { recipientName?: string; parentName?: string; expiresHours?: number }
+) {
+  const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3025';
+  const inviteUrl = `${baseUrl}/invite/complete?token=${token}`;
+  const expiresHours = opts?.expiresHours ?? 24;
+  const recipient = opts?.recipientName ? `${opts.recipientName}` : 'You';
+  const parent = opts?.parentName ? ` from ${opts.parentName}` : '';
+
+  const html = `
+    <p>Hi ${recipient},</p>
+    <p>You have been invited${parent} to join. Click <a href="${inviteUrl}">this link</a> to accept the invite and set your password.</p>
+    <p>The link expires in ${expiresHours} hours.</p>
+    <p>If the button doesn't work, paste this token into the app: <code>${token}</code></p>
+  `;
+
+  await transporter.sendMail({
+    from,
+    to,
+    subject: 'You have been invited',
+    html,
+    text: `Accept invitation: ${inviteUrl} (token: ${token})`,
+  });
+}

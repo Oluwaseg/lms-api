@@ -1,6 +1,13 @@
 import { Router } from 'express';
-import { body } from 'express-validator';
 import { InstructorController } from '../controllers/InstructorController';
+import { authenticate, requireRole } from '../middleware/auth.middleware';
+import rateLimiter from '../utils/rateLimiter';
+import { validate } from '../validate';
+import { emailBodySchema } from '../validate/common';
+import {
+  instructorLoginSchema,
+  instructorRegisterSchema,
+} from '../validate/instructor';
 
 export const instructorRouter = Router();
 
@@ -49,13 +56,7 @@ export const instructorRouter = Router();
  */
 instructorRouter.post(
   '/register',
-  [
-    body('name').trim().notEmpty().withMessage('Name is required'),
-    body('email').isEmail().withMessage('Valid email is required'),
-    body('password')
-      .isLength({ min: 6 })
-      .withMessage('Password must be at least 6 characters long'),
-  ],
+  validate(instructorRegisterSchema),
   InstructorController.register
 );
 
@@ -128,4 +129,71 @@ instructorRouter.get('/verify/:token', InstructorController.verify);
  *                     data:
  *                       $ref: '#/components/schemas/TokenData'
  */
-instructorRouter.post('/login', InstructorController.login);
+instructorRouter.post(
+  '/login',
+  validate(instructorLoginSchema),
+  InstructorController.login
+);
+
+/**
+ * @swagger
+ * /api/instructors/resend-verification:
+ *   post:
+ *     tags:
+ *       - Instructors
+ *     summary: Resend email verification for an instructor
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Verification email resent
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ */
+instructorRouter.post(
+  '/resend-verification',
+  rateLimiter(6, 1000 * 60 * 60),
+  validate(emailBodySchema),
+  InstructorController.resendVerification
+);
+
+/**
+ * @swagger
+ * /api/instructors/me:
+ *   get:
+ *     tags:
+ *       - Instructors
+ *     summary: Get currently authenticated instructor profile
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Instructor profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/User'
+ */
+instructorRouter.get(
+  '/me',
+  authenticate,
+  requireRole('instructor'),
+  InstructorController.me
+);

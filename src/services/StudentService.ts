@@ -107,4 +107,36 @@ export class StudentService {
 
     return { user: { id: user.id, name: user.name, email: user.email } };
   }
+
+  static async resendVerification(email: string) {
+    const user = await userRepository.findOne({ where: { email } });
+    if (!user) throw new Error('User not found');
+    if (user.isVerified) throw new Error('User already verified');
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const secret = process.env.TOKEN_SECRET || 'dev-token-secret';
+    const hmac = crypto
+      .createHmac('sha256', secret)
+      .update(token)
+      .digest('hex');
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
+    const vt = tokenRepository.create({
+      user,
+      tokenHash: hmac,
+      type: 'email_verification',
+      expiresAt,
+      used: false,
+    } as Partial<VerificationToken>);
+    await tokenRepository.save(vt);
+
+    try {
+      if (user.email) await sendVerificationEmail(user.email, token);
+    } catch (e) {
+      // log and continue
+      // eslint-disable-next-line no-console
+      console.error('Failed to send verification email', e);
+    }
+
+    return { success: true };
+  }
 }

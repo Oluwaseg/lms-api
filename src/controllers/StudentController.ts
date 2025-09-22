@@ -1,6 +1,5 @@
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
-import { validationResult } from 'express-validator';
 import jwt from 'jsonwebtoken';
 import { AppDataSource } from '../config/database';
 import { User } from '../entities/User';
@@ -9,10 +8,6 @@ import { ResponseHandler } from '../utils/response.handler';
 
 export class StudentController {
   static async register(req: Request, res: Response) {
-    const errors = validationResult(req);
-    if (!errors.isEmpty())
-      return res.status(400).json({ errors: errors.array() });
-
     try {
       const payload = (req as any).validated?.body ?? req.body;
       const result = await StudentService.register(payload as any);
@@ -44,6 +39,53 @@ export class StudentController {
     }
   }
 
+  static async resendVerification(req: Request, res: Response) {
+    try {
+      const payload = (req as any).validated?.body ?? req.body;
+      const { email } = payload as { email: string };
+      await StudentService.resendVerification(email);
+      return res.json(
+        ResponseHandler.success(null, 'Verification email resent')
+      );
+    } catch (err: any) {
+      return res
+        .status(400)
+        .json(
+          ResponseHandler.error(
+            err.message || 'Failed to resend verification',
+            400
+          )
+        );
+    }
+  }
+
+  static async me(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.sub as string;
+      const userRepo = AppDataSource.getRepository(User);
+      const user = await userRepo.findOne({
+        where: { id: userId },
+        relations: ['role'],
+      });
+      if (!user)
+        return res.status(404).json(ResponseHandler.notFound('User not found'));
+      // sanitize
+      const { id, name, email, role, code, isVerified, lastLogin } = user;
+      return res.json(
+        ResponseHandler.success(
+          { id, name, email, role, code, isVerified, lastLogin },
+          'User profile'
+        )
+      );
+    } catch (err: any) {
+      return res
+        .status(500)
+        .json(
+          ResponseHandler.error(err.message || 'Failed to fetch user', 500)
+        );
+    }
+  }
+
   static async login(req: Request, res: Response) {
     try {
       const payload = (req as any).validated?.body ?? req.body;
@@ -70,6 +112,15 @@ export class StudentController {
         return res
           .status(403)
           .json(ResponseHandler.forbidden('Not authorized for student login'));
+      // Ensure user has verified their email
+      if (!user.isVerified)
+        return res
+          .status(403)
+          .json(
+            ResponseHandler.forbidden(
+              'Email not verified. Please resend verification.'
+            )
+          );
       const token = jwt.sign(
         { sub: user.id, role: user.role?.name },
         process.env.JWT_SECRET || 'dev-jwt',
