@@ -8,15 +8,28 @@ This document explains the purpose of each table in the Learning Management Syst
 
 ### **roles**
 
-- Defines the available system roles: `student`, `parent`, `instructor`, `moderator`, `admin`.
-- Keeps role logic clean and scalable.
+Stores all registered accounts.
+Includes profile info (`name`, `email`, `phone`, `address`, `picture`) and system details (`role_id`, `status`, verification flags).
+`email` and `code` are indexed and unique in the schema.
+Each user has a **unique code** (`STU12345`, `INS5678`, etc.) separate from their username.
+Field names in the codebase: `is_verified` (boolean), `last_login` (timestamp), and `deleted_at` (nullable timestamp) are used to manage lifecycle and soft-deletes.
 
 ### **users**
 
-- Stores all registered accounts.
+### **verification_tokens**
+
+Manages token verification used for email verification, password reset and onboarding flows.
+The implementation stores only a hashed lookup value in `token_hash` (HMAC-SHA256 with a server secret) for security. The DB/entity does not store raw tokens in production; a temporary plaintext token column may exist during development/migrations but should be removed before production deployment.
+Tokens include `type`, `expires_at`, `used` and `created_at` fields and are linked by `user_id`.
+
 - Includes profile info (name, email, phone, address, picture) and system details (role, status, verification).
-- Each user has a **unique code** (`STU12345`, `INS5678`, etc.) separate from their username.
-- Supports account lifecycle with fields like `last_login`, `status`, and `deleted_at`.
+
+### **parents_children**
+
+Links **parent accounts** to their **child/student accounts**.
+Implemented with explicit foreign key columns named `parent_id` and `child_id` (matching the migration and entity join columns).
+Includes `relationship` (e.g., father, mother, guardian) and `created_at` timestamp.
+A unique constraint enforces that the same child cannot be linked multiple times to the same parent.
 
 ### **verification_tokens**
 
