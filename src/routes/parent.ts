@@ -318,6 +318,32 @@ parentRouter.get(
 );
 
 // Update parent profile (email cannot be changed here)
+/**
+ * @swagger
+ * /api/parents/me:
+ *   patch:
+ *     tags:
+ *       - Parents
+ *     summary: Update currently authenticated parent profile (email cannot be changed)
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ */
 parentRouter.patch(
   '/me',
   authenticate,
@@ -327,6 +353,37 @@ parentRouter.patch(
 );
 
 // Change password for parent
+/**
+ * @swagger
+ * /api/parents/me/password:
+ *   patch:
+ *     tags:
+ *       - Parents
+ *     summary: Change password for the authenticated parent
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password changed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ */
 parentRouter.patch(
   '/me/password',
   authenticate,

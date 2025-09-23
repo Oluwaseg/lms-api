@@ -13,6 +13,7 @@
 - Can upload courses, which can be free or paid.
 - Course creation uses a **WYSIWYG editor** (title, description, images sanitized).
 - Track student engagement via analytics dashboard.
+  - Instructors should be able to save a course as a draft (work-in-progress) and publish it later. Support autosave and an explicit `publish` action.
 
 ### 3. Parents
 
@@ -39,6 +40,7 @@
 
 - Free & paid courses (Paystack for payments).
 - WYSIWYG course creation with content sanitization.
+ - Course lifecycle: `draft` -> `published`. Instructors can save drafts and publish when ready. Store `status` or `is_published` and `published_at` on the `courses` entity.
 
 ### Progress & Tracking
 
@@ -77,6 +79,7 @@
   - Users (Students, Parents, Instructors, Moderators, Admins)
   - Parent-Child relationships
   - Courses & Enrollments
+  - Courses should include lifecycle fields: `status` (draft|published|archived), `published_at`, and autosave metadata (last_draft_saved_at). Ensure instructor ownership and permission checks for publish.
   - Assignments & Progress Tracking
   - Ratings & Forums
   - Notifications

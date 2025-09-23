@@ -163,6 +163,32 @@ studentRouter.get(
 );
 
 // Update student profile (email cannot be changed here)
+/**
+ * @swagger
+ * /api/students/me:
+ *   patch:
+ *     tags:
+ *       - Students
+ *     summary: Update currently authenticated student profile (email cannot be changed)
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ */
 studentRouter.patch(
   '/me',
   authenticate,
@@ -172,6 +198,37 @@ studentRouter.patch(
 );
 
 // Change password for student
+/**
+ * @swagger
+ * /api/students/me/password:
+ *   patch:
+ *     tags:
+ *       - Students
+ *     summary: Change password for the authenticated student
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password changed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ */
 studentRouter.patch(
   '/me/password',
   authenticate,

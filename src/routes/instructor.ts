@@ -201,6 +201,32 @@ instructorRouter.get(
 );
 
 // Update instructor profile (email cannot be changed here)
+/**
+ * @swagger
+ * /api/instructors/me:
+ *   patch:
+ *     tags:
+ *       - Instructors
+ *     summary: Update currently authenticated instructor profile (email cannot be changed)
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ */
 instructorRouter.patch(
   '/me',
   authenticate,
@@ -210,6 +236,37 @@ instructorRouter.patch(
 );
 
 // Change password for instructor
+/**
+ * @swagger
+ * /api/instructors/me/password:
+ *   patch:
+ *     tags:
+ *       - Instructors
+ *     summary: Change password for the authenticated instructor
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password changed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ */
 instructorRouter.patch(
   '/me/password',
   authenticate,
