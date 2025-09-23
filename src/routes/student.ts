@@ -4,7 +4,11 @@ import { authenticate, requireRole } from '../middleware/auth.middleware';
 import rateLimiter from '../utils/rateLimiter';
 import { validate } from '../validate';
 import { emailBodySchema } from '../validate/common';
-import { studentRegisterSchema } from '../validate/student';
+import {
+  studentChangePasswordSchema,
+  studentRegisterSchema,
+  studentUpdateSchema,
+} from '../validate/student';
 
 export const studentRouter = Router();
 
@@ -156,6 +160,24 @@ studentRouter.get(
   authenticate,
   requireRole('student'),
   StudentController.me
+);
+
+// Update student profile (email cannot be changed here)
+studentRouter.patch(
+  '/me',
+  authenticate,
+  requireRole('student'),
+  validate(studentUpdateSchema),
+  StudentController.update
+);
+
+// Change password for student
+studentRouter.patch(
+  '/me/password',
+  authenticate,
+  requireRole('student'),
+  validate(studentChangePasswordSchema),
+  StudentController.changePassword
 );
 
 /**

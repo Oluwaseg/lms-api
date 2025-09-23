@@ -28,3 +28,18 @@ export const createChildSchema = z.object({
     email: z.string().email().optional(),
   }),
 });
+
+// Schema for updating parent profile (email cannot be changed here)
+export const parentUpdateSchema = z.object({
+  body: z.object({
+    name: z.string().min(1).optional(),
+    // additional profile fields can be added here but email is explicitly disallowed
+  }),
+});
+
+export const parentChangePasswordSchema = z.object({
+  body: z.object({
+    currentPassword: z.string().min(1),
+    newPassword: z.string().min(6),
+  }),
+});

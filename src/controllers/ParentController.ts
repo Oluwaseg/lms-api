@@ -50,6 +50,20 @@ export class ParentController {
     }
   }
 
+  static async listChildren(req: Request, res: Response) {
+    try {
+      const parentId = req.user?.sub as string;
+      const children = await ParentService.getChildren(parentId);
+      return res.json(ResponseHandler.success(children, 'Children list'));
+    } catch (err: any) {
+      return res
+        .status(400)
+        .json(
+          ResponseHandler.error(err.message || 'Failed to list children', 400)
+        );
+    }
+  }
+
   static async register(req: Request, res: Response) {
     try {
       const payload = (req as any).validated?.body ?? req.body;
@@ -131,6 +145,40 @@ export class ParentController {
         .status(500)
         .json(
           ResponseHandler.error(err.message || 'Failed to fetch user', 500)
+        );
+    }
+  }
+
+  static async update(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.sub as string;
+      const payload = (req as any).validated?.body ?? req.body;
+      const result = await ParentService.updateProfile(userId, payload);
+      return res.json(ResponseHandler.success(result, 'Profile updated'));
+    } catch (err: any) {
+      return res
+        .status(400)
+        .json(
+          ResponseHandler.error(err.message || 'Failed to update profile', 400)
+        );
+    }
+  }
+
+  static async changePassword(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.sub as string;
+      const payload = (req as any).validated?.body ?? req.body;
+      const { currentPassword, newPassword } = payload as {
+        currentPassword: string;
+        newPassword: string;
+      };
+      await ParentService.changePassword(userId, currentPassword, newPassword);
+      return res.json(ResponseHandler.success(null, 'Password changed'));
+    } catch (err: any) {
+      return res
+        .status(400)
+        .json(
+          ResponseHandler.error(err.message || 'Failed to change password', 400)
         );
     }
   }

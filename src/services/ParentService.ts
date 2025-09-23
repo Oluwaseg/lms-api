@@ -188,6 +188,25 @@ export class ParentService {
     return { child: savedChild, link: pc };
   }
 
+  static async getChildren(parentId: string) {
+    // Return list of children linked to this parent with basic info
+    const relations = await parentChildRepo.find({
+      where: { parent: { id: parentId } } as any,
+      relations: ['child'],
+    });
+    return relations.map((r) => {
+      const c = r.child as User;
+      return {
+        id: c.id,
+        name: c.name,
+        email: c.email,
+        isVerified: c.isVerified,
+        relationship: r.relationship || null,
+        linkedAt: r.createdAt,
+      };
+    });
+  }
+
   static async verify(token: string) {
     const secret = process.env.TOKEN_SECRET || 'dev-token-secret';
     const hmac = crypto
@@ -248,6 +267,34 @@ export class ParentService {
       console.error('Failed to send verification email', e);
     }
 
+    return { success: true };
+  }
+
+  static async updateProfile(userId: string, data: { name?: string }) {
+    const user = (await userRepo.findOne({
+      where: { id: userId },
+    })) as User | null;
+    if (!user) throw new Error('User not found');
+    // Disallow email updates here - email can only be changed through a separate flow
+    if (data.name) user.name = data.name;
+    const saved = await userRepo.save(user);
+    const { id, name, email, isVerified, lastLogin } = saved;
+    return { id, name, email, isVerified, lastLogin };
+  }
+
+  static async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+  ) {
+    const user = (await userRepo.findOne({
+      where: { id: userId },
+    })) as User | null;
+    if (!user) throw new Error('User not found');
+    const match = await bcrypt.compare(currentPassword, user.password);
+    if (!match) throw new Error('Current password is incorrect');
+    user.password = await bcrypt.hash(newPassword, 10);
+    await userRepo.save(user);
     return { success: true };
   }
 }

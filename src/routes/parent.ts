@@ -7,8 +7,10 @@ import { emailBodySchema } from '../validate/common';
 import {
   createChildSchema,
   linkChildSchema,
+  parentChangePasswordSchema,
   parentLoginSchema,
   parentRegisterSchema,
+  parentUpdateSchema,
 } from '../validate/parent';
 
 export const parentRouter = Router();
@@ -244,6 +246,14 @@ parentRouter.post(
   ParentController.createChild
 );
 
+// List children linked to the authenticated parent
+parentRouter.get(
+  '/children',
+  authenticate,
+  requireRole('parent'),
+  ParentController.listChildren
+);
+
 /**
  * @swagger
  * /api/parents/resend-verification:
@@ -305,4 +315,22 @@ parentRouter.get(
   authenticate,
   requireRole('parent'),
   ParentController.me
+);
+
+// Update parent profile (email cannot be changed here)
+parentRouter.patch(
+  '/me',
+  authenticate,
+  requireRole('parent'),
+  validate(parentUpdateSchema),
+  ParentController.update
+);
+
+// Change password for parent
+parentRouter.patch(
+  '/me/password',
+  authenticate,
+  requireRole('parent'),
+  validate(parentChangePasswordSchema),
+  ParentController.changePassword
 );

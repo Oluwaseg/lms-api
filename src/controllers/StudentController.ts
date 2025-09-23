@@ -86,6 +86,40 @@ export class StudentController {
     }
   }
 
+  static async update(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.sub as string;
+      const payload = (req as any).validated?.body ?? req.body;
+      const result = await StudentService.updateProfile(userId, payload);
+      return res.json(ResponseHandler.success(result, 'Profile updated'));
+    } catch (err: any) {
+      return res
+        .status(400)
+        .json(
+          ResponseHandler.error(err.message || 'Failed to update profile', 400)
+        );
+    }
+  }
+
+  static async changePassword(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user?.sub as string;
+      const payload = (req as any).validated?.body ?? req.body;
+      const { currentPassword, newPassword } = payload as {
+        currentPassword: string;
+        newPassword: string;
+      };
+      await StudentService.changePassword(userId, currentPassword, newPassword);
+      return res.json(ResponseHandler.success(null, 'Password changed'));
+    } catch (err: any) {
+      return res
+        .status(400)
+        .json(
+          ResponseHandler.error(err.message || 'Failed to change password', 400)
+        );
+    }
+  }
+
   static async login(req: Request, res: Response) {
     try {
       const payload = (req as any).validated?.body ?? req.body;

@@ -5,8 +5,10 @@ import rateLimiter from '../utils/rateLimiter';
 import { validate } from '../validate';
 import { emailBodySchema } from '../validate/common';
 import {
+  instructorChangePasswordSchema,
   instructorLoginSchema,
   instructorRegisterSchema,
+  instructorUpdateSchema,
 } from '../validate/instructor';
 
 export const instructorRouter = Router();
@@ -196,4 +198,22 @@ instructorRouter.get(
   authenticate,
   requireRole('instructor'),
   InstructorController.me
+);
+
+// Update instructor profile (email cannot be changed here)
+instructorRouter.patch(
+  '/me',
+  authenticate,
+  requireRole('instructor'),
+  validate(instructorUpdateSchema),
+  InstructorController.update
+);
+
+// Change password for instructor
+instructorRouter.patch(
+  '/me/password',
+  authenticate,
+  requireRole('instructor'),
+  validate(instructorChangePasswordSchema),
+  InstructorController.changePassword
 );

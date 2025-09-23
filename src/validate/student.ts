@@ -14,3 +14,17 @@ export const studentLoginSchema = z.object({
     password: z.string().min(1),
   }),
 });
+
+// Schema for updating student profile (email cannot be changed here)
+export const studentUpdateSchema = z.object({
+  body: z.object({
+    name: z.string().min(1).optional(),
+  }),
+});
+
+export const studentChangePasswordSchema = z.object({
+  body: z.object({
+    currentPassword: z.string().min(1),
+    newPassword: z.string().min(6),
+  }),
+});

@@ -139,4 +139,31 @@ export class StudentService {
 
     return { success: true };
   }
+
+  static async updateProfile(userId: string, data: { name?: string }) {
+    const user = (await userRepository.findOne({
+      where: { id: userId },
+    })) as User | null;
+    if (!user) throw new Error('User not found');
+    if (data.name) user.name = data.name;
+    const saved = await userRepository.save(user);
+    const { id, name, email, isVerified, lastLogin } = saved;
+    return { id, name, email, isVerified, lastLogin };
+  }
+
+  static async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+  ) {
+    const user = (await userRepository.findOne({
+      where: { id: userId },
+    })) as User | null;
+    if (!user) throw new Error('User not found');
+    const match = await bcrypt.compare(currentPassword, user.password);
+    if (!match) throw new Error('Current password is incorrect');
+    user.password = await bcrypt.hash(newPassword, 10);
+    await userRepository.save(user);
+    return { success: true };
+  }
 }

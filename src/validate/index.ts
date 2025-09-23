@@ -19,3 +19,11 @@ export const validate =
     (req as any).validated = result.data;
     return next();
   };
+
+// Re-export individual schemas to keep imports convenient
+export * from './auth';
+export * from './common';
+export * from './instructor';
+export * from './invite';
+export * from './parent';
+export * from './student';
