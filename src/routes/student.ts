@@ -267,4 +267,4 @@ studentRouter.patch(
  *                           type: string
  *                           format: uuid
  */
-studentRouter.get('/verify/:token', StudentController.verify);
+studentRouter.get('/verify-email', StudentController.verify);

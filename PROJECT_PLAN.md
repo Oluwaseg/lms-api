@@ -40,7 +40,7 @@
 
 - Free & paid courses (Paystack for payments).
 - WYSIWYG course creation with content sanitization.
- - Course lifecycle: `draft` -> `published`. Instructors can save drafts and publish when ready. Store `status` or `is_published` and `published_at` on the `courses` entity.
+- Course lifecycle: `draft` -> `published`. Instructors can save drafts and publish when ready. Store `status` or `is_published` and `published_at` on the `courses` entity.
 
 ### Progress & Tracking
 

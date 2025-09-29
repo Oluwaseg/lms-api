@@ -1,4 +1,4 @@
-import { Request, Response, Router } from 'express';
+import { Router } from 'express';
 import { ParentController } from '../controllers/ParentController';
 import { authenticate, requireRole } from '../middleware/auth.middleware';
 import rateLimiter from '../utils/rateLimiter';
@@ -61,12 +61,7 @@ export const parentRouter = Router();
 parentRouter.post(
   '/register',
   validate(parentRegisterSchema),
-  async (req: Request, res: Response) => {
-    const { ParentController } = await import(
-      '../controllers/ParentController'
-    );
-    return ParentController.register(req, res);
-  }
+  ParentController.register
 );
 
 /**
@@ -99,10 +94,7 @@ parentRouter.post(
  *                           type: string
  *                           format: uuid
  */
-parentRouter.get('/verify/:token', async (req: Request, res: Response) => {
-  const { ParentController } = await import('../controllers/ParentController');
-  return ParentController.verify(req, res);
-});
+parentRouter.get('/verify-email', ParentController.verify);
 
 /**
  * @swagger
@@ -143,12 +135,7 @@ parentRouter.get('/verify/:token', async (req: Request, res: Response) => {
 parentRouter.post(
   '/login',
   validate(parentLoginSchema),
-  async (req: Request, res: Response) => {
-    const { ParentController } = await import(
-      '../controllers/ParentController'
-    );
-    return ParentController.login(req, res);
-  }
+  ParentController.login
 );
 
 /**

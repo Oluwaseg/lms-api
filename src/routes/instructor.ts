@@ -92,7 +92,7 @@ instructorRouter.post(
  *                           type: string
  *                           format: uuid
  */
-instructorRouter.get('/verify/:token', InstructorController.verify);
+instructorRouter.get('/verify-email', InstructorController.verify);
 
 // login
 /**

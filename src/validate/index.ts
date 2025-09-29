@@ -23,6 +23,7 @@ export const validate =
 // Re-export individual schemas to keep imports convenient
 export * from './auth';
 export * from './common';
+export * from './course';
 export * from './instructor';
 export * from './invite';
 export * from './parent';

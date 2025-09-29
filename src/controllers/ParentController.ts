@@ -91,7 +91,13 @@ export class ParentController {
 
   static async verify(req: Request, res: Response) {
     try {
-      const result = await ParentService.verify(req.params.token);
+      const token = req.query.token as string;
+      if (!token) {
+        return res
+          .status(400)
+          .json(ResponseHandler.error('Verification token is required', 400));
+      }
+      const result = await ParentService.verify(token);
       return res.json(
         ResponseHandler.success(
           { id: result.user.id },
