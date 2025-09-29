@@ -5,7 +5,7 @@ import { ParentChild } from '../entities/ParentChild';
 import { Role } from '../entities/Role';
 import { User } from '../entities/User';
 import { VerificationToken } from '../entities/VerificationToken';
-import { sendVerificationEmail } from '../utils/mailer';
+import { sendParentVerificationEmail } from '../utils/mailer';
 
 const userRepo = AppDataSource.getRepository(User);
 const parentChildRepo = AppDataSource.getRepository(ParentChild);
@@ -63,7 +63,7 @@ export class ParentService {
     } as Partial<VerificationToken>);
     await tokenRepo.save(vt);
     try {
-      if (saved.email) await sendVerificationEmail(saved.email, token);
+      if (saved.email) await sendParentVerificationEmail(saved.email, token);
     } catch (e) {
       // log but don't fail registration
       // eslint-disable-next-line no-console
@@ -171,13 +171,22 @@ export class ParentService {
         // Use a dedicated invite email template (do not re-use verification email for invites)
         // sendInviteEmail is more appropriate here (includes parent/child names and invite link)
         // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const { sendInviteEmail } = require('../utils/mailer');
-        if (childData.email)
+        const {
+          sendInviteEmail,
+          sendVerificationEmail,
+        } = require('../utils/mailer');
+        if (childData.email) {
+          // For child accounts created by parent, send the invite template which contains parent/child names
           await sendInviteEmail(childData.email, token, {
             recipientName: childData.name,
             parentName: parent.name,
             expiresHours: 24,
           });
+        }
+        // Also send a verification email for parents creating a child (optional, won't duplicate if invite covers it)
+        // (kept here for backward-compatibility in case callers expect a verification-style email)
+        // if you prefer to skip, remove the following line.
+        // if (childData.email) await sendVerificationEmail(childData.email, token, 'student');
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error('Failed to send invite email', e);
@@ -261,7 +270,7 @@ export class ParentService {
     await tokenRepo.save(vt);
 
     try {
-      if (user.email) await sendVerificationEmail(user.email, token);
+      if (user.email) await sendParentVerificationEmail(user.email, token);
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error('Failed to send verification email', e);

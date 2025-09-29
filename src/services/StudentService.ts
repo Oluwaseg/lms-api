@@ -4,7 +4,7 @@ import { AppDataSource } from '../config/database';
 import { Role } from '../entities/Role';
 import { User } from '../entities/User';
 import { VerificationToken } from '../entities/VerificationToken';
-import { sendVerificationEmail } from '../utils/mailer';
+import { sendStudentVerificationEmail } from '../utils/mailer';
 
 const userRepository = AppDataSource.getRepository(User);
 const tokenRepository = AppDataSource.getRepository(VerificationToken);
@@ -66,7 +66,7 @@ export class StudentService {
 
     // Send verification email (do not return token in any response)
     try {
-      if (saved.email) await sendVerificationEmail(saved.email, token);
+      if (saved.email) await sendStudentVerificationEmail(saved.email, token);
     } catch (e) {
       // log but don't fail registration if mail fails
       // eslint-disable-next-line no-console
@@ -130,7 +130,7 @@ export class StudentService {
     await tokenRepository.save(vt);
 
     try {
-      if (user.email) await sendVerificationEmail(user.email, token);
+      if (user.email) await sendStudentVerificationEmail(user.email, token);
     } catch (e) {
       // log and continue
       // eslint-disable-next-line no-console

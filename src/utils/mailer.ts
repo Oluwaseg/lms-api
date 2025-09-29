@@ -13,18 +13,78 @@ let transporter = nodemailer.createTransport({
   auth: user ? { user, pass } : undefined,
 });
 
-export async function sendVerificationEmail(to: string, token: string) {
+// function buildVerifyUrl(baseUrl: string, role: string, token: string) {
+//   return `${baseUrl}/api/${role}s/verify-email?token=${encodeURIComponent(
+//     token
+//   )}`;
+// }
+
+function buildFrontendVerifyUrl(baseUrl: string, role: string, token: string) {
+  return `${baseUrl}/${role}s/verify?token=${encodeURIComponent(token)}`;
+}
+
+export async function sendStudentVerificationEmail(to: string, token: string) {
   const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3025';
-  const verifyUrl = `${baseUrl}/api/students/verify/${token}`;
-  const html = `<p>Please verify your email by clicking <a href="${verifyUrl}">here</a> or pasting the token into the app.</p>`;
+  const verifyUrl = buildFrontendVerifyUrl(baseUrl, 'student', token);
+  const subject = `Verify your Student account`;
+  const html = `
+    <p>Hi,</p>
+    <p>Please verify your student account by clicking <a href="${verifyUrl}">this link</a> or pasting the token into the app.</p>
+    <p>If the link doesn't work, use this token: <code>${token}</code></p>
+  `;
+
   await transporter.sendMail({
     from,
     to,
-    subject: 'Verify your email',
+    subject,
     html,
-    text: `Verify your email using this link: ${verifyUrl}`,
+    text: `Verify your student account using this link: ${verifyUrl} (token: ${token})`,
   });
 }
+
+export async function sendParentVerificationEmail(to: string, token: string) {
+  const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3025';
+  const verifyUrl = buildFrontendVerifyUrl(baseUrl, 'parent', token);
+  const subject = `Verify your Parent account`;
+  const html = `
+    <p>Hi,</p>
+    <p>Please verify your parent account by clicking <a href="${verifyUrl}">this link</a> or pasting the token into the app.</p>
+    <p>If the link doesn't work, use this token: <code>${token}</code></p>
+  `;
+
+  await transporter.sendMail({
+    from,
+    to,
+    subject,
+    html,
+    text: `Verify your parent account using this link: ${verifyUrl} (token: ${token})`,
+  });
+}
+
+export async function sendInstructorVerificationEmail(
+  to: string,
+  token: string
+) {
+  const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3025';
+  const verifyUrl = buildFrontendVerifyUrl(baseUrl, 'instructor', token);
+  const subject = `Verify your Instructor account`;
+  const html = `
+    <p>Hi,</p>
+    <p>Please verify your instructor account by clicking <a href="${verifyUrl}">this link</a> or pasting the token into the app.</p>
+    <p>If the link doesn't work, use this token: <code>${token}</code></p>
+  `;
+
+  await transporter.sendMail({
+    from,
+    to,
+    subject,
+    html,
+    text: `Verify your instructor account using this link: ${verifyUrl} (token: ${token})`,
+  });
+}
+
+// Backwards-compatible alias for callers that still use the combined name.
+export const sendVerificationEmail = sendStudentVerificationEmail;
 
 export async function sendInviteEmail(
   to: string,
