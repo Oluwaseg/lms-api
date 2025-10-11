@@ -1,10 +1,10 @@
-import bcrypt from 'bcrypt';
-import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
-import { AppDataSource } from '../config/database';
-import { User } from '../entities/User';
-import { ParentService } from '../services/ParentService';
-import { ResponseHandler } from '../utils/response.handler';
+import bcrypt from "bcrypt";
+import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import { AppDataSource } from "../config/database";
+import { User } from "../entities/User";
+import { ParentService } from "../services/ParentService";
+import { ResponseHandler } from "../utils/response.handler";
 
 export class ParentController {
   static async linkChild(req: Request, res: Response) {
@@ -15,10 +15,10 @@ export class ParentController {
       const pc = await ParentService.linkChild(
         parentId,
         childCode,
-        relationship
+        relationship,
       );
       return res.json(
-        ResponseHandler.success({ id: pc.id }, 'Child linked to parent.')
+        ResponseHandler.success({ id: pc.id }, "Child linked to parent."),
       );
     } catch (err: any) {
       return res.status(400).json(ResponseHandler.error(err.message, 400));
@@ -41,9 +41,9 @@ export class ParentController {
         .json(
           ResponseHandler.success(
             { id: child.id },
-            'Child created and invite sent.',
-            201
-          )
+            "Child created and invite sent.",
+            201,
+          ),
         );
     } catch (err: any) {
       return res.status(400).json(ResponseHandler.error(err.message, 400));
@@ -54,12 +54,12 @@ export class ParentController {
     try {
       const parentId = req.user?.sub as string;
       const children = await ParentService.getChildren(parentId);
-      return res.json(ResponseHandler.success(children, 'Children list'));
+      return res.json(ResponseHandler.success(children, "Children list"));
     } catch (err: any) {
       return res
         .status(400)
         .json(
-          ResponseHandler.error(err.message || 'Failed to list children', 400)
+          ResponseHandler.error(err.message || "Failed to list children", 400),
         );
     }
   }
@@ -78,14 +78,14 @@ export class ParentController {
         .json(
           ResponseHandler.success(
             { id: result.user.id },
-            'Parent registered',
-            201
-          )
+            "Parent registered",
+            201,
+          ),
         );
     } catch (err: any) {
       return res
         .status(400)
-        .json(ResponseHandler.error(err.message || 'Registration failed', 400));
+        .json(ResponseHandler.error(err.message || "Registration failed", 400));
     }
   }
 
@@ -95,14 +95,14 @@ export class ParentController {
       if (!token) {
         return res
           .status(400)
-          .json(ResponseHandler.error('Verification token is required', 400));
+          .json(ResponseHandler.error("Verification token is required", 400));
       }
       const result = await ParentService.verify(token);
       return res.json(
         ResponseHandler.success(
           { id: result.user.id },
-          'Email verified successfully.'
-        )
+          "Email verified successfully.",
+        ),
       );
     } catch (err: any) {
       return res.status(400).json(ResponseHandler.error(err.message, 400));
@@ -115,16 +115,16 @@ export class ParentController {
       const { email } = payload as { email: string };
       await ParentService.resendVerification(email);
       return res.json(
-        ResponseHandler.success(null, 'Verification email resent')
+        ResponseHandler.success(null, "Verification email resent"),
       );
     } catch (err: any) {
       return res
         .status(400)
         .json(
           ResponseHandler.error(
-            err.message || 'Failed to resend verification',
-            400
-          )
+            err.message || "Failed to resend verification",
+            400,
+          ),
         );
     }
   }
@@ -135,22 +135,22 @@ export class ParentController {
       const userRepo = AppDataSource.getRepository(User);
       const user = await userRepo.findOne({
         where: { id: userId },
-        relations: ['role'],
+        relations: ["role"],
       });
       if (!user)
-        return res.status(404).json(ResponseHandler.notFound('User not found'));
+        return res.status(404).json(ResponseHandler.notFound("User not found"));
       const { id, name, email, role, code, isVerified, lastLogin } = user;
       return res.json(
         ResponseHandler.success(
           { id, name, email, role, code, isVerified, lastLogin },
-          'User profile'
-        )
+          "User profile",
+        ),
       );
     } catch (err: any) {
       return res
         .status(500)
         .json(
-          ResponseHandler.error(err.message || 'Failed to fetch user', 500)
+          ResponseHandler.error(err.message || "Failed to fetch user", 500),
         );
     }
   }
@@ -160,12 +160,12 @@ export class ParentController {
       const userId = (req as any).user?.sub as string;
       const payload = (req as any).validated?.body ?? req.body;
       const result = await ParentService.updateProfile(userId, payload);
-      return res.json(ResponseHandler.success(result, 'Profile updated'));
+      return res.json(ResponseHandler.success(result, "Profile updated"));
     } catch (err: any) {
       return res
         .status(400)
         .json(
-          ResponseHandler.error(err.message || 'Failed to update profile', 400)
+          ResponseHandler.error(err.message || "Failed to update profile", 400),
         );
     }
   }
@@ -179,12 +179,15 @@ export class ParentController {
         newPassword: string;
       };
       await ParentService.changePassword(userId, currentPassword, newPassword);
-      return res.json(ResponseHandler.success(null, 'Password changed'));
+      return res.json(ResponseHandler.success(null, "Password changed"));
     } catch (err: any) {
       return res
         .status(400)
         .json(
-          ResponseHandler.error(err.message || 'Failed to change password', 400)
+          ResponseHandler.error(
+            err.message || "Failed to change password",
+            400,
+          ),
         );
     }
   }
@@ -199,43 +202,50 @@ export class ParentController {
       const userRepo = AppDataSource.getRepository(User);
       const user = await userRepo.findOne({
         where: { email },
-        relations: ['role'],
+        relations: ["role"],
       });
       if (!user)
         return res
           .status(401)
-          .json(ResponseHandler.unauthorized('Invalid credentials'));
+          .json(ResponseHandler.unauthorized("Invalid credentials"));
       const match = await bcrypt.compare(password, user.password);
       if (!match)
         return res
           .status(401)
-          .json(ResponseHandler.unauthorized('Invalid credentials'));
+          .json(ResponseHandler.unauthorized("Invalid credentials"));
       // ensure role is parent
-      if (user.role?.name !== 'parent')
+      if (user.role?.name !== "parent")
         return res
           .status(403)
-          .json(ResponseHandler.forbidden('Not authorized for parent login'));
+          .json(ResponseHandler.forbidden("Not authorized for parent login"));
       // Ensure user has verified their email
       if (!user.isVerified)
         return res
           .status(403)
           .json(
             ResponseHandler.forbidden(
-              'Email not verified. Please resend verification.'
-            )
+              "Email not verified. Please resend verification.",
+            ),
           );
       const token = jwt.sign(
         { sub: user.id, role: user.role?.name },
-        process.env.JWT_SECRET || 'dev-jwt',
-        { expiresIn: '7d' }
+        process.env.JWT_SECRET || "dev-jwt",
+        { expiresIn: "7d" },
       );
       user.lastLogin = new Date();
       await userRepo.save(user);
-      return res.json(ResponseHandler.success({ token }, 'Login successful'));
+      return res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        })
+        .json(ResponseHandler.success({}, "Login successful"));
     } catch (err: any) {
       return res
         .status(500)
-        .json(ResponseHandler.error(err.message || 'Login failed', 500));
+        .json(ResponseHandler.error(err.message || "Login failed", 500));
     }
   }
 }
