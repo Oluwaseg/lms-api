@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import { DataSource } from 'typeorm';
+import { InstructorProfile } from '../entities/InstructorProfile';
 import { ParentChild } from '../entities/ParentChild';
 import { Role } from '../entities/Role';
 import { User } from '../entities/User';
@@ -12,7 +13,7 @@ export const AppDataSource = new DataSource({
   url: process.env.DATABASE_URL,
   synchronize: false,
   logging: true,
-  entities: [Role, User, VerificationToken, ParentChild],
+  entities: [Role, User, VerificationToken, ParentChild, InstructorProfile],
   migrations: ['src/migrations/*.ts'],
   subscribers: [],
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
